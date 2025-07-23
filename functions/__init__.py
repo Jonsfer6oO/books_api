@@ -1,0 +1,1 @@
+from .db_functions import search_name, search_genre, search_author, search_pages, search_chapters
