@@ -13,6 +13,7 @@ from . import models
 # По страницам. Больше какого-то значения.
 # По количеству глав. Больше какого то значения.
 
+# Получение книги по параметрам.
 db_logger = logging.getLogger(__name__)
 
 db_logger.info('Создание роутера.')
@@ -27,7 +28,7 @@ db_logger.info('Роутер создан')
                status_code=status.HTTP_200_OK)
 async def get_book_name(name_book: Annotated[str, Path(min_length=5, max_length=10)]):
     try:
-        return functions.search_name(name_book)
+        return functions.Search_methods.search_name(name_book)
     except Exception as ex:
         db_logger.error(f'Получение книги по имени. name_book={name_book}', exc_info=True)
         return HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -38,7 +39,7 @@ async def get_book_name(name_book: Annotated[str, Path(min_length=5, max_length=
                status_code=status.HTTP_200_OK)
 async def get_books_genre(genre: models.Genre):
     try:
-        return functions.search_genre(genre)
+        return functions.Search_methods.search_genre(genre)
     except Exception as ex:
         db_logger.error(f'Получение книг по жанру. genre={genre}', exc_info=True)
         return HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -49,7 +50,7 @@ async def get_books_genre(genre: models.Genre):
                status_code=status.HTTP_200_OK)
 async def get_books_author(author: models.Author):
     try:
-        return functions.search_author(author)
+        return functions.Search_methods.search_author(author)
     except Exception as ex:
         db_logger.error(f'Получение книг по автору. author={author}', exc_info=True)
         return HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -60,7 +61,7 @@ async def get_books_author(author: models.Author):
                status_code=status.HTTP_200_OK)
 async def get_books_pages(pages: Annotated[int, Path(ge=200, le=700)]):
     try:
-        return functions.search_pages(pages)
+        return functions.Search_methods.search_pages(pages)
     except Exception as ex:
         db_logger.error(f'Получение книг по количеству страниц. pages={pages}', exc_info=True)
         return HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -71,8 +72,19 @@ async def get_books_pages(pages: Annotated[int, Path(ge=200, le=700)]):
                status_code=status.HTTP_200_OK)
 async def get_books_chapters(chapters: Annotated[int, Path(ge=10, le=40)]):
     try:
-        return functions.search_chapters(chapters)
+        return functions.Search_methods.search_chapters(chapters)
     except Exception as ex:
         db_logger.error(f'Получение книг по количеству глав. chapters={chapters}', exc_info=True)
+        return HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                             detail=ex)
+
+@db_router.get('/params/',
+               description='Getting a book by parameter set',
+               status_code=status.HTTP_200_OK)
+async def get_books_params(params: Annotated[models.BookParams, Query()]):
+    try:
+        return functions.Search_methods.serach_params(params)
+    except Exception as ex:
+        db_logger.error(f'Получение книг по параметрам. params={params.__dict__}', exc_info=True)
         return HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                              detail=ex)
